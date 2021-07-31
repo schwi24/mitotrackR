@@ -1,0 +1,98 @@
+---
+title: "mitotrackR"
+author: "Christoph Schweingruber"
+date: "7/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mitotrackR)
+library(tidygraph)
+library(ggraph)
+```
+
+```{r read_trackmate}
+g <- read_TrackMate(filepath = "test/test.xml", import = "graph")
+
+ggraph(graph = g, layout = "manual", x = node_x, y = node_y) +
+  geom_node_point(mapping = aes(color = node_t), size = 0.2) +
+  scale_y_reverse() +
+  scale_color_continuous(trans = "reverse") +
+  labs(color = "time") +
+  theme_gray()
+ggraph(graph = g, layout = "manual", x = node_x, y = node_t) +
+  geom_node_point(mapping = aes(color = intensity_total), size = 0.2) +
+  scale_y_reverse() +
+  scale_color_continuous(trans = "reverse") +
+  ylab("time") +
+  labs(color = "intensity") +
+  theme_gray()
+ggraph(graph = g, layout = "manual", x = node_x, y = node_y) +
+  geom_edge_point(mapping = aes(color = factor(track_id)), edge_size = 0.2) +
+  scale_y_reverse() +
+  ylab("y") +
+  theme_gray() +
+  theme(legend.position = "none")
+
+```
+
+```{r split}
+g_list <- split_by_tracks(graph = g)
+g_list[['1']] %>% tidygraph::activate(nodes) %>% tibble::as_tibble()
+
+ggraph(g_list[['1']], layout = "manual", x = node_x, y = node_y) +
+  geom_edge_link0() +
+  geom_node_point(mapping = aes(color = node_t)) +
+  geom_node_point(mapping = aes(shape = node_terminus), size = 4) +
+  scale_shape_manual(values = c(1,0,3,4,NA)) +
+  scale_y_reverse() +
+  scale_color_continuous(trans = "reverse") +
+  labs(color = "time", shape = "terminus") +
+  theme_graph()
+
+## Nicest plots are with Kamada-Kawai
+ggraph(g_list[['1']], layout = "igraph", algorithm = "kk") +
+  geom_edge_link0() +
+  geom_node_point(mapping = aes(color = node_t)) +
+  geom_node_point(mapping = aes(shape = node_terminus), size = 4) +
+  scale_shape_manual(values = c(1,0,3,4,NA)) +
+  scale_color_continuous(trans = "reverse") +
+  labs(color = "time", shape = "terminus") +
+  theme_graph()
+
+## Trees with Reingold Tilford or Sugiyama are instructive
+ggraph(g_list[['1']], layout = "igraph", algorithm = "tree", 
+       mode = "all", 
+       root = which(igraph::V(g_list[['1']])$node_terminus=="start") # Add rootlevel too?
+) +
+  geom_edge_diagonal() +
+  geom_node_point(mapping = aes(color = node_t)) +
+  geom_node_point(mapping = aes(shape = node_terminus), size = 4) +
+  scale_shape_manual(values = c(1,0,3,4,NA)) +
+  scale_color_continuous(trans = "reverse") +
+  labs(color = "time", shape = "terminus") +
+  theme_graph()
+ggraph(g_list[['1']], layout = "igraph", algorithm = "sugiyama") +
+  geom_edge_diagonal() +
+  geom_node_point(mapping = aes(color = node_t)) +
+  geom_node_point(mapping = aes(shape = node_terminus), size = 4) +
+  scale_shape_manual(values = c(1,0,3,4,NA)) +
+  scale_color_continuous(trans = "reverse") +
+  labs(color = "time", shape = "terminus") +
+  theme_graph()
+```
+
+```{r rebind}
+g_rebound <- bind_tracks(g_list)
+
+ggraph(g_rebound, layout = "manual", x = node_x, y = node_y) +
+  geom_node_point(mapping = aes(color = node_t), size = 0.2) +
+  scale_color_continuous(trans = "reverse") +
+  scale_y_reverse() +
+  labs(color = "time") +
+  theme_gray()
+```
+
+```{r}
+```

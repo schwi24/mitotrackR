@@ -76,6 +76,7 @@ read_TrackMate <- function(
       ) %>%
       dplyr::mutate(
         .,
+        node_id = as.character(node_id),
         node_frame = as.integer(node_frame), # location
         node_t = as.double(node_t), 
         node_x = as.double(node_x),
@@ -139,8 +140,11 @@ read_TrackMate <- function(
       dplyr::mutate(
         .,
         edge_id = as.character(edge_id),
+        track_id = as.character(track_id),
         from = as.character(source_id),
         to = as.character(target_id),
+        source_id = as.character(source_id),
+        target_id = as.character(target_id),
         link_cost = as.double(link_cost),
         edge_t = as.double(edge_t),
         edge_x = as.double(edge_x),
@@ -271,15 +275,7 @@ read_TrackMate <- function(
     }
     
     ## Annotate nodes for start, end, fusion, and fission
-    routes <- routes %>% tidygraph::activate(nodes) %>%
-      dplyr::mutate(., node_terminus = NA) %>%
-      dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "in") == 0, "start")) %>%
-      dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "out") == 0, "end")) %>%
-      dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "in") > 1, "fusion")) %>%
-      dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "out") > 1, "fission")) %>%
-      dplyr::mutate(., node_terminus = as.factor(node_terminus)) %>%
-      dplyr::mutate(., node_terminus = forcats::fct_relevel(node_terminus, "start", "end", "fusion", "fission"))
-  
+    routes <- add_node_terminus(graph = routes, check_node_attributes = TRUE)
   }
   
   ## Return
