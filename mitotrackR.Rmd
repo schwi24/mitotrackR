@@ -13,7 +13,7 @@ library(ggraph)
 ```
 
 ```{r read_trackmate}
-g <- read_TrackMate(filepath = "test/test.xml", import = "graph")
+g <- read_TrackMate(filepath = "data/test/test.xml", import = "graph")
 
 ggraph(graph = g, layout = "manual", x = node_x, y = node_y) +
   geom_node_point(mapping = aes(color = node_t), size = 0.2) +
