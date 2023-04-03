@@ -33,18 +33,24 @@ add_node_terminus <- function(graph, check_node_attributes = FALSE) {
     if ("node_terminus" %in% graph_columns) {
       return(graph)
     }
-  
+    
   }
   
   graph <- graph %>%
     tidygraph::activate(., what = nodes) %>%
-    dplyr::mutate(., node_terminus = "internal") %>%
-    dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "in") == 0, "start")) %>%
-    dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "out") == 0, "end")) %>%
-    dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "in") > 1, "fusion")) %>%
-    dplyr::mutate(., node_terminus = replace(node_terminus, igraph::degree(., mode = "out") > 1, "fission")) %>%
-    dplyr::mutate(., node_terminus = as.factor(node_terminus)) %>%
-    dplyr::mutate(., node_terminus = forcats::fct_expand(node_terminus, "start", "end", "fusion", "fission", "internal")) %>%
-    dplyr::mutate(., node_terminus = forcats::fct_relevel(node_terminus, "start", "end", "fusion", "fission", "internal"))
+    dplyr::mutate(
+      .,
+      node_terminus = case_when(
+        igraph::degree(graph = graph, mode = "all") == 0 ~ "isolate",
+        igraph::degree(graph = graph, mode = "in") == 0 ~ "start",
+        igraph::degree(graph = graph, mode = "out") == 0 ~ "end",
+        igraph::degree(graph = graph, mode = "all") > 3 ~ "complex",
+        igraph::degree(graph = graph, mode = "in") > 1 ~ "fusion",
+        igraph::degree(graph = graph, mode = "out") > 1 ~ "fission",
+        TRUE ~ "internal"
+      )
+    ) %>%
+    dplyr::mutate(., node_terminus = factor(node_terminus, levels = c("start", "end", "fusion", "fission", "complex", "internal", "isolate")))
+  
   return(graph)
 }
