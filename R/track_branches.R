@@ -13,10 +13,10 @@ find_branches <- function(graph){
     stop("Invalid input! The graph must be of class 'igraph' (igraph package) or 'tbl_graph' (tidygraph package)")
   }
   
-  if ("tbl_graph" %in% class(graph)) {
-    g <- igraph::as.igraph(graph)
-  } else {
+  if ("igraph" %in% class(graph)) {
     g <- graph
+  } else {
+    g <- igraph::as.igraph(graph)
   }
   
   ## BFS
