@@ -15,6 +15,8 @@ find_branches <- function(graph){
   
   if ("tbl_graph" %in% class(graph)) {
     g <- igraph::as.igraph(graph)
+  } else {
+    g <- graph
   }
   
   ## BFS
