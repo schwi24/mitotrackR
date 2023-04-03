@@ -1,5 +1,5 @@
 Package: mitotrackR
-Title: What the Package Does (One Line, Title Case)
+Title: Analysis Of Miochondrial Traces From TrackMate
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Christoph",
