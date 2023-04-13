@@ -144,8 +144,8 @@ weighted_angular_mean <- function(angle, speed, units="radians"){
   }
   
   # Calculate weighted mean angle
-  sx <- mean(speed * sin(x))
-  cx <- mean(speed * cos(x))
+  sx <- mean(speed * sin(angle))
+  cx <- mean(speed * cos(angle))
   mean_angle <- atan2(sx, cx)
   
   # Convert back to degree and return mean angle
